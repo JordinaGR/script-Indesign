@@ -7,6 +7,32 @@ var doc = app.activeDocument;
 var carpeta = Folder("C:/Users/jordi/Desktop/provaScript/figures2")
 var archivoTxt = File("C:/Users/jordi/Desktop/provaScript/peus_de_fotos.txt");
 
+function extraerNumero(texto) {
+    if (!texto) return null;
+    
+    // Forzamos la conversión a cadena primitiva de JavaScript
+    var str = String(texto) + "";
+    var digitosEncontrados = "";
+    var leyendoNumero = false;
+
+    for (var i = 0; i < str.length; i++) {
+        // En ExtendScript es más seguro acceder directamente con corchetes [i]
+        var cchar = str[i];
+        
+        // Comprobar si el carácter actual es un dígito entre '0' y '9'
+        if (cchar >= '0' && cchar <= '9') {
+            digitosEncontrados += cchar;
+            leyendoNumero = true;
+        } else if (leyendoNumero) {
+            // Si ya estábamos leyendo un número y encontramos un no-dígito, terminamos
+            break;
+        }
+    }
+
+    // Si encontramos dígitos, los convertimos a un número entero
+    return digitosEncontrados !== "" ? parseInt(digitosEncontrados, 10) : null;
+}
+
 if (carpeta != null) {
     var fotos = carpeta.getFiles("*.png"); // fotos es un array
 
@@ -15,7 +41,7 @@ if (carpeta != null) {
     archivoTxt.close();
     var listaPies = contenido.split(/\r?\n/);
     
-    
+
     if (fotos.length > 0) {
 
         for (var i = 0; i < fotos.length; i++){
@@ -27,7 +53,13 @@ if (carpeta != null) {
             var top = 40;
             var left = 40;
 
+            var numCrida = i+1;
 
+            var nomFoto = String(decodeURIComponent(foto.name));
+            var numFoto = extraerNumero(nomFoto)
+
+            var varPeuFoto = listaPies[i];
+            var numPeu = extraerNumero(varPeuFoto)
 
             app.findTextPreferences = NothingEnum.nothing;
             app.changeTextPreferences = NothingEnum.nothing;
@@ -37,6 +69,11 @@ if (carpeta != null) {
             if (resultados.length > 0) {
                 var resultadoEncontrado = resultados[0];
                 var puntoDeInsercion = resultadoEncontrado.insertionPoints[-1];
+
+                if (numCrida !== numFoto || numCrida !== numPeu){
+                    alert("NO COINCIDEIXEN")
+                    exit();   
+                }
 
                 var colocados = page.place(foto, [left, top]);
                 var imagen = colocados[0];        // El objeto de la imagen importada
@@ -69,8 +106,8 @@ if (carpeta != null) {
                 // Posicionamos el marco de texto [top, left, bottom, right]
                 marcoTexto.geometricBounds = [topPie, left, bottomPie, rightPie];
                 
-                var varPeuFoto = listaPies[i];
-                marcoTexto.contents = varPeuFoto + " ";  // canviar els peus de foto
+
+                marcoTexto.contents = varPeuFoto + " ";
                 if (estiloPie.isValid) {
                     marcoTexto.paragraphs[0].applyParagraphStyle(estiloPie, true);
                 }
