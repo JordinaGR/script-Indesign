@@ -4,13 +4,12 @@ var doc = app.activeDocument;
 //    "Selecciona la carpeta on hi ha les fotos"
 //);
 
-var carpeta = Folder("C:/Users/jordi/Desktop/provaScript/figures3")
+var carpeta = Folder("C:/Users/jordi/Desktop/provaScript/figures2")
 var archivoTxt = File("C:/Users/jordi/Desktop/provaScript/peus_de_fotos.txt");
 
-var archivodocs = File("C:/Users/jordi/Desktop/provaScript/peus.docx");
 
 var primeraCrida = 0; // i-1
-var ultimaCrida = 4;
+var ultimaCrida = 10;
 
 function extraerNumero(texto) {
     if (!texto) return null;
@@ -66,6 +65,7 @@ if (carpeta != null) {
             app.findTextPreferences.findWhat = textBuscar;
             var resultados = doc.findText();
             if (resultados.length === 0) {
+                alert("no trobat el text")
                 continue;
             }
 
@@ -73,24 +73,40 @@ if (carpeta != null) {
             var puntoDeInsercion = resultadoEncontrado.insertionPoints[-1];
             var page = puntoDeInsercion.parentTextFrames[0].parentPage;
 
-            var flag = false;
+            var flag1 = false;
             var j = 0;
-            while (j < fotos.length && !flag){
+            while (j < fotos.length && !flag1){
+
                 var foto = fotos[j];
-                var varPeuFoto = listaPies[j];
-
                 var nomFoto = String(decodeURIComponent(foto.name));
-
                 var numFoto = extraerNumero(nomFoto)
-                var numPeu = extraerNumero(varPeuFoto)
-                if (numFoto == numPeu && numFoto == numCrida){
-                    flag = true;
+
+                if (numFoto == numCrida){
+                    flag1 = true;
                 } else {
                     j++;
                 }
             }
+            if (!flag1) {
+                alert("foto no trobada")
+                continue;
+            }
 
-            if (!flag) {
+            var flag2 = false;
+            var j = 0;
+            while (j < listaPies.length && !flag2){
+
+                var varPeuFoto = listaPies[j];
+                var numPeu = extraerNumero(varPeuFoto)
+
+                if (numPeu == numCrida){
+                    flag2 = true;
+                } else {
+                    j++;
+                }
+            }
+            if (!flag2) {
+                alert("peu no trobat")
                 continue;
             }
 
