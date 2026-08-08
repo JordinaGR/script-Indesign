@@ -9,7 +9,7 @@ var archivoTxt = File("C:/Users/jordi/Desktop/provaScript/peus_de_fotos.txt");
 
 
 var primeraCrida = 0; // i-1
-var ultimaCrida = 10;
+var ultimaCrida = 4 ; // i
 
 function extraerNumero(texto) {
     if (!texto) return null;
@@ -49,7 +49,7 @@ if (carpeta != null) {
     if (fotos.length > 0) {
 
         // i index crida, j index foto
-        for (var i = primeraCrida; i < ultimaCrida; i++) {
+        for (var i = ultimaCrida - 1; i >= primeraCrida; i--) {
             //var page = doc.pages[0];
             var nombreEstilo = "Peu";
             var estiloPie = doc.paragraphStyles.itemByName(nombreEstilo);
@@ -74,8 +74,8 @@ if (carpeta != null) {
             var page = puntoDeInsercion.parentTextFrames[0].parentPage;
 
             var flag1 = false;
-            var j = 0;
-            while (j < fotos.length && !flag1){
+            var j = fotos.length -1;
+            while (j >= 0 && !flag1){
 
                 var foto = fotos[j];
                 var nomFoto = String(decodeURIComponent(foto.name));
@@ -84,7 +84,7 @@ if (carpeta != null) {
                 if (numFoto == numCrida){
                     flag1 = true;
                 } else {
-                    j++;
+                    j--;
                 }
             }
             if (!flag1) {
@@ -93,8 +93,8 @@ if (carpeta != null) {
             }
 
             var flag2 = false;
-            var j = 0;
-            while (j < listaPies.length && !flag2){
+            var j = listaPies.length -1;
+            while (j >= 0 && !flag2){
 
                 var varPeuFoto = listaPies[j];
                 var numPeu = extraerNumero(varPeuFoto)
@@ -102,7 +102,7 @@ if (carpeta != null) {
                 if (numPeu == numCrida){
                     flag2 = true;
                 } else {
-                    j++;
+                    j--;
                 }
             }
             if (!flag2) {
@@ -130,8 +130,7 @@ if (carpeta != null) {
             var altoDeseado = anchoDeseado * proporcion;
 
             // 5. Aplicamos las dimensiones EXACTAS al marco contenedor
-            marco.geometricBounds = [left, top, left + altoDeseado, top + anchoDeseado];
-
+            marco.geometricBounds = [top, left, top + altoDeseado, left + anchoDeseado];
             // 6. Forzamos a la imagen a rellenar el marco proporcionalmente (esto SÍ la amplía)
             marco.fit(FitOptions.CONTENT_TO_FRAME);
 
@@ -166,7 +165,6 @@ if (carpeta != null) {
             var anchorY = puntoDeInsercion.baseline;
             grupo.move(anchorPage, [anchorX -35, anchorY - 35]);
             grupo.anchoredObjectSettings.insertAnchoredObject(puntoDeInsercion, AnchorPosition.ANCHORED);
-
 
         }
 
