@@ -7,6 +7,11 @@ var doc = app.activeDocument;
 var carpeta = Folder("C:/Users/jordi/Desktop/provaScript/figures2")
 var archivoTxt = File("C:/Users/jordi/Desktop/provaScript/peus_de_fotos.txt");
 
+var archivodocs = File("C:/Users/jordi/Desktop/provaScript/peus.docx");
+
+var primeraCrida = 0; // i-1
+var ultimaCrida = 3;
+
 function extraerNumero(texto) {
     if (!texto) return null;
     
@@ -44,9 +49,9 @@ if (carpeta != null) {
 
     if (fotos.length > 0) {
 
-        for (var i = 0; i < fotos.length; i++){
-            var page = doc.pages[0];
-            var foto = fotos[i];
+        // i index crida, j index foto
+        for (var i = primeraCrida; i < ultimaCrida; i++) {
+            //var page = doc.pages[0];
             var nombreEstilo = "Peu";
             var estiloPie = doc.paragraphStyles.itemByName(nombreEstilo);
             var textBuscar = "(fig. " + (i + 1) + ")";
@@ -55,72 +60,91 @@ if (carpeta != null) {
 
             var numCrida = i+1;
 
-            var nomFoto = String(decodeURIComponent(foto.name));
-            var numFoto = extraerNumero(nomFoto)
-
-            var varPeuFoto = listaPies[i];
-            var numPeu = extraerNumero(varPeuFoto)
 
             app.findTextPreferences = NothingEnum.nothing;
             app.changeTextPreferences = NothingEnum.nothing;
             app.findTextPreferences.findWhat = textBuscar;
             var resultados = doc.findText();
-
-            if (resultados.length > 0) {
-                var resultadoEncontrado = resultados[0];
-                var puntoDeInsercion = resultadoEncontrado.insertionPoints[-1];
-
-                if (numCrida !== numFoto || numCrida !== numPeu){
-                    alert("NO COINCIDEIXEN")
-                    exit();   
-                }
-
-                var colocados = page.place(foto, [left, top]);
-                var imagen = colocados[0];        // El objeto de la imagen importada
-                var marco = imagen.parent;        // El marco contenedor de la imagen
-
-                var anchoDeseado = 50; // en pt
-                
-                var bounds = marco.geometricBounds;
-                var anchoActual = bounds[3] - bounds[1];
-                var altoActual = bounds[2] - bounds[0];
-                var proporcion = altoActual / anchoActual;
-                var altoDeseado = anchoDeseado * proporcion;
-
-                marco.geometricBounds = [top, left, top + altoDeseado, left + anchoDeseado];
-                
-                marco.fit(FitOptions.CONTENT_TO_FRAME);
-                marco.textWrapPreferences.textWrapMode = TextWrapModes.JUMP_OBJECT_TEXT_WRAP;
-                marco.textWrapPreferences.textWrapOffset = ["0pt", "0pt", "0pt", "0pt"];
-
-
-                // 3. Crear el marco de texto justo debajo de la imagen
-                var margenPie = 2;   
-                var altoPie = 5;
-                
-                var topPie = top + altoDeseado + margenPie;
-                var bottomPie = topPie + altoPie;
-                var rightPie = left + anchoDeseado;
-
-                var marcoTexto = page.textFrames.add();
-                // Posicionamos el marco de texto [top, left, bottom, right]
-                marcoTexto.geometricBounds = [topPie, left, bottomPie, rightPie];
-                
-
-                marcoTexto.contents = varPeuFoto + " ";
-                if (estiloPie.isValid) {
-                    marcoTexto.paragraphs[0].applyParagraphStyle(estiloPie, true);
-                }
-
-                // Opcional: autoajustar el alto de la caja de texto al contenido escrito
-                marcoTexto.textFramePreferences.autoSizingReferencePoint = AutoSizingReferenceEnum.TOP_CENTER_POINT;
-                marcoTexto.textFramePreferences.autoSizingType = AutoSizingTypeEnum.HEIGHT_ONLY;
-
-                var grupo = page.groups.add([marco, marcoTexto]);
-                grupo.textWrapPreferences.textWrapMode = TextWrapModes.JUMP_OBJECT_TEXT_WRAP;
-                grupo.anchoredObjectSettings.insertAnchoredObject(puntoDeInsercion, AnchorPosition.ANCHORED);
-
+            if (resultados.length === 0) {
+                continue;
             }
+
+            var resultadoEncontrado = resultados[0];
+            var puntoDeInsercion = resultadoEncontrado.insertionPoints[-1];
+            var page = puntoDeInsercion.parentTextFrames[0].parentPage;
+
+            var flag = false;
+            var j = 0;
+            while (j < fotos.length && !flag){
+                var foto = fotos[j];
+                var varPeuFoto = listaPies[j];
+
+                var nomFoto = String(decodeURIComponent(foto.name));
+
+                var numFoto = extraerNumero(nomFoto)
+                var numPeu = extraerNumero(varPeuFoto)
+                if (numFoto == numPeu && numFoto == numCrida){
+                    flag = true;
+                } else {
+                    j++;
+                }
+            }
+
+            if (!flag) {
+                continue;
+            }
+
+            var colocados = page.place(foto, [left, top]);
+            var imagen = colocados[0];        // El objeto de la imagen importada
+            var marco = imagen.parent;        // El marco contenedor de la imagen
+
+            var anchoDeseado = 50; // en pt
+            
+            var bounds = marco.geometricBounds;
+            var anchoActual = bounds[3] - bounds[1];
+            var altoActual = bounds[2] - bounds[0];
+            var proporcion = altoActual / anchoActual;
+            var altoDeseado = anchoDeseado * proporcion;
+
+            marco.geometricBounds = [top, left, top + altoDeseado, left + anchoDeseado];
+            
+            marco.fit(FitOptions.CONTENT_TO_FRAME);
+            //marco.textWrapPreferences.textWrapMode = TextWrapModes.JUMP_OBJECT_TEXT_WRAP;
+            marco.textWrapPreferences.textWrapOffset = ["0pt", "0pt", "0pt", "0pt"];
+
+
+            // 3. Crear el marco de texto justo debajo de la imagen
+            var margenPie = 2;   
+            var altoPie = 5;
+            
+            var topPie = top + altoDeseado + margenPie;
+            var bottomPie = topPie + altoPie;
+            var rightPie = left + anchoDeseado;
+
+            var marcoTexto = page.textFrames.add();
+            // Posicionamos el marco de texto [top, left, bottom, right]
+            marcoTexto.geometricBounds = [topPie, left, bottomPie, rightPie];
+            
+
+            marcoTexto.contents = varPeuFoto + " ";
+            if (estiloPie.isValid) {
+                marcoTexto.paragraphs[0].applyParagraphStyle(estiloPie, true);
+            }
+
+            // Opcional: autoajustar el alto de la caja de texto al contenido escrito
+            marcoTexto.textFramePreferences.autoSizingReferencePoint = AutoSizingReferenceEnum.TOP_CENTER_POINT;
+            marcoTexto.textFramePreferences.autoSizingType = AutoSizingTypeEnum.HEIGHT_ONLY;
+
+            var grupo = page.groups.add([marco, marcoTexto]);
+            //grupo.textWrapPreferences.textWrapMode = TextWrapModes.JUMP_OBJECT_TEXT_WRAP;
+            
+            var anchorPage = puntoDeInsercion.parentTextFrames[0].parentPage;
+            var anchorX = puntoDeInsercion.horizontalOffset;
+            var anchorY = puntoDeInsercion.baseline;
+            grupo.move(anchorPage, [anchorX -35, anchorY - 35]);
+            grupo.anchoredObjectSettings.insertAnchoredObject(puntoDeInsercion, AnchorPosition.ANCHORED);
+
+
         }
 
     } else {
