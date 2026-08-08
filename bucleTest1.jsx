@@ -4,13 +4,13 @@ var doc = app.activeDocument;
 //    "Selecciona la carpeta on hi ha les fotos"
 //);
 
-var carpeta = Folder("C:/Users/jordi/Desktop/provaScript/figures2")
+var carpeta = Folder("C:/Users/jordi/Desktop/provaScript/figures3")
 var archivoTxt = File("C:/Users/jordi/Desktop/provaScript/peus_de_fotos.txt");
 
 var archivodocs = File("C:/Users/jordi/Desktop/provaScript/peus.docx");
 
 var primeraCrida = 0; // i-1
-var ultimaCrida = 3;
+var ultimaCrida = 4;
 
 function extraerNumero(texto) {
     if (!texto) return null;
@@ -98,19 +98,26 @@ if (carpeta != null) {
             var imagen = colocados[0];        // El objeto de la imagen importada
             var marco = imagen.parent;        // El marco contenedor de la imagen
 
-            var anchoDeseado = 50; // en pt
+            var anchoDeseado = 80; // en pt ample de les fotos
             
-            var bounds = marco.geometricBounds;
-            var anchoActual = bounds[3] - bounds[1];
-            var altoActual = bounds[2] - bounds[0];
-            var proporcion = altoActual / anchoActual;
+            imagen.absoluteHorizontalScale = 100;
+            imagen.absoluteVerticalScale = 100;
+
+
+            // 3. Calculamos la proporción original de la imagen
+            var boundsOriginales = marco.geometricBounds;
+            var anchoOriginal = boundsOriginales[3] - boundsOriginales[1];
+            var altoOriginal = boundsOriginales[2] - boundsOriginales[0];
+            var proporcion = altoOriginal / anchoOriginal;
+
+            // 4. Calculamos el alto proporcional exacto según el ancho deseado
             var altoDeseado = anchoDeseado * proporcion;
 
-            marco.geometricBounds = [top, left, top + altoDeseado, left + anchoDeseado];
-            
+            // 5. Aplicamos las dimensiones EXACTAS al marco contenedor
+            marco.geometricBounds = [left, top, left + altoDeseado, top + anchoDeseado];
+
+            // 6. Forzamos a la imagen a rellenar el marco proporcionalmente (esto SÍ la amplía)
             marco.fit(FitOptions.CONTENT_TO_FRAME);
-            //marco.textWrapPreferences.textWrapMode = TextWrapModes.JUMP_OBJECT_TEXT_WRAP;
-            marco.textWrapPreferences.textWrapOffset = ["0pt", "0pt", "0pt", "0pt"];
 
 
             // 3. Crear el marco de texto justo debajo de la imagen
