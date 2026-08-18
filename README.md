@@ -1,4 +1,4 @@
-# Automatització de tasques de maquetació per Adobe InDesign
+# Automatització de tasques de maquetació per a Adobe InDesign
 
 Aquest script automatitza la inserció i el posicionament de figures en un document d'Adobe InDesign.
 
