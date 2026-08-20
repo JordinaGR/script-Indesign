@@ -1,15 +1,82 @@
-# Automatització de tasques de maquetació per a Adobe InDesign
+# InDesign Figure Automation
 
-Aquest script automatitza la inserció i el posicionament de figures en un document d'Adobe InDesign.
+An Adobe InDesign ExtendScript that automates the placement, positioning, anchoring, and captioning of figures in editorial documents.
 
-El programa:
+The script is designed to reduce repetitive layout work by automatically matching figures to their references in the document text and placing each figure together with its corresponding caption.
 
-1. Llegeix una carpeta que conté les figures i un document amb els peus de figura corresponents.
-2. Busca en el text la cita pertinent de cada figura per determinar on s'ha d'inserir.
-3. Insereix la figura i l'ancora al costat de la cita corresponent.
-4. Crea el peu de figura i el situa sota la figura.
-5. Agrupa la figura i el seu peu de figura perquè es mantinguin com una única unitat.
-6. Insereix el peu de figura corresponent a la caixa de text i li aplica l'estil de paràgraf definit.
-7. Repeteix el procés per a totes les figures seleccionades.
+## Overview
 
-L'objectiu és automatitzar la maquetació de figures i els seus peus, reduint el temps necessari per buscar-les, inserir-les i mantenir-ne la correspondència amb les cites del text.
+Manually inserting and positioning figures in long documents can be time-consuming and error-prone, particularly when a document contains a large number of figures and references.
+
+This project automates that workflow.
+
+The script:
+
+1. Reads a directory containing the figures and their corresponding captions.
+2. Searches the InDesign document for references to each figure.
+3. Inserts the corresponding figure at the appropriate location.
+4. Anchors the figure to the relevant text.
+5. Creates and positions the figure caption.
+6. Applies the configured paragraph style to the caption.
+7. Groups the figure and caption so they can be treated as a single layout element.
+8. Repeats the process for the selected figures.
+
+The result is a more consistent and efficient figure-placement workflow for Adobe InDesign.
+
+## Features
+
+* **Automatic figure matching**
+  Finds figure references in the document and associates them with the corresponding image.
+
+* **Automatic placement**
+  Inserts figures at the location of their references.
+
+* **Anchored figures**
+  Figures are anchored to the relevant text so that they remain associated with the corresponding content.
+
+* **Automatic captions**
+  Captions are generated and placed underneath their associated figures.
+
+* **Paragraph style support**
+  Captions can be formatted using a predefined InDesign paragraph style.
+
+* **Figure + caption grouping**
+  The figure and its caption are grouped together to simplify subsequent layout adjustments.
+
+* **Batch processing**
+  The workflow can be repeated across multiple figures rather than requiring manual placement of each one.
+
+
+## Requirements
+
+* Adobe InDesign
+* Adobe ExtendScript-compatible scripting environment
+* An InDesign document containing figure references
+* A directory containing the corresponding figures
+
+The scripts use Adobe InDesign's scripting API to interact directly with the document and its layout objects.
+
+## Motivation
+
+The project was created to automate a common editorial production task: maintaining the relationship between figures, figure references, and captions in an InDesign document.
+
+Instead of manually:
+
+* searching for every figure reference,
+* locating the corresponding image,
+* placing the image,
+* positioning it,
+* creating its caption,
+* formatting the caption, and
+* keeping the two elements together,
+
+the process can be handled programmatically.
+
+## Technology
+
+* **Adobe InDesign**
+* **ExtendScript**
+* **JavaScript**
+* **InDesign DOM / scripting API**
+
+The project demonstrates how scripting can be used to extend InDesign's native capabilities and automate complex editorial workflows.
