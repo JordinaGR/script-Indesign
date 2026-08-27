@@ -1,16 +1,20 @@
 var doc = app.activeDocument;
 
-//var carpeta = Folder.selectDialog(
-//    "Selecciona la carpeta on hi ha les fotos"
-//);
+var carpeta = Folder.selectDialog("Selecciona la carpeta on hi ha les fotos");
+var archivoWord = File.openDialog("Selecciona el document de Word amb els peus de foto", "Archivos de Word:*.docx;*.doc;");
 
-var carpeta = Folder("C:/Users/jordi/Desktop/provaScript/figures2")
+//var carpeta = Folder("C:/Users/jordi/Desktop/provaScript/figures2")
 //var archivoTxt = File("C:/Users/jordi/Desktop/provaScript/peus_de_fotos.txt");
-var archivoWord = File("C:/Users/jordi/Desktop/provaScript/peus.docx");
+//var archivoWord = File("C:/Users/jordi/Desktop/provaScript/peus.docx");
 
 
 var primeraCrida = 0; // i-1
 var ultimaCrida = 4 ; // i
+
+var myExtensions = [".png", ".jpg", ".jpeg", ".tif", ".tiff", ".gif", ".pdf", ".psd", ".ai", ".heic"];
+var pre = "(fig. "
+var post = ")"
+
 
 function extraerNumero(texto) {
     if (!texto) return null;
@@ -38,7 +42,6 @@ function extraerNumero(texto) {
     return digitosEncontrados !== "" ? parseInt(digitosEncontrados, 10) : null;
 }
 
-
 function obtenerPiesDesdeWord(fileWord, documentTarget) {
     if (!fileWord.exists) {
         alert("El archivo Word no existe");
@@ -64,11 +67,45 @@ function obtenerPiesDesdeWord(fileWord, documentTarget) {
     return listaPies;
 }
 
+function obtenerImagenesMultiples(myFolder) {
+    if (File.fs == "Macintosh") {
+        return myFolder.getFiles(myFileFilterMac);
+    } else {
+        var myFilteredFiles = new Array();
+        for (var i = 0; i < myExtensions.length; i++) {
+            var myFiles = myFolder.getFiles("*" + myExtensions[i]);
+            if (myFiles.length != 0) {
+                for (var j = 0; j < myFiles.length; j++) {
+                    myFilteredFiles.push(myFiles[j]);
+                }
+            }
+        }
+        return myFilteredFiles;
+    }
+}
 
+function myFileFilterMac(myFile) {
+    var myFileType = myFile.type;
+    // Comprovar per tipus de fitxer intern de Mac
+    switch (myFileType) {
+        case "JPEG":
+        case "PNGf":
+        case "TIFF":
+            return true;
+        default:
+            // Comprovar per extensió en el nom de fitxer
+            var fileName = myFile.name.toLowerCase();
+            for (var i = 0; i < myExtensions.length; i++) {
+                if (fileName.indexOf(myExtensions[i]) > -1) {
+                    return true;
+                }
+            }
+    }
+    return false;
+}
 
 if (carpeta != null) {
-    var fotos = carpeta.getFiles("*.png"); // fotos es un array
-
+    var fotos = obtenerImagenesMultiples(carpeta);
     var listaPies = obtenerPiesDesdeWord(archivoWord, doc);
 
     if (fotos.length > 0) {
@@ -78,7 +115,7 @@ if (carpeta != null) {
             //var page = doc.pages[0];
             var nombreEstilo = "Peu";
             var estiloPie = doc.paragraphStyles.itemByName(nombreEstilo);
-            var textBuscar = "(fig. " + (i + 1) + ")";
+            var textBuscar = pre + (i + 1) + post;
             var top = 40;
             var left = 40;
 
