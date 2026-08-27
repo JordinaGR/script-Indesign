@@ -34,6 +34,10 @@ win.add("statictext", undefined, "num. última figura");
 var inputNum2 = win.add("edittext", undefined, "10");
 inputNum2.preferredSize.width = 120;
 
+win.add("statictext", undefined, "nom de l'estil de paràgraf");
+var inputStr3 = win.add("edittext", undefined, "Peu");
+inputStr3.preferredSize.width = 120;
+
 // Botons
 var btnGroup = win.add("group");
 btnGroup.add("button", undefined, "D'acord", {name: "ok"});
@@ -47,12 +51,11 @@ if (win.show() !== 1) {
 // Guardem els valors introduïts
 var pre = inputStr1.text;
 var post = inputStr2.text;
+var nombreEstilo = inputStr3.text;
 
 // Convertim el text dels enters a números (parseInt)
 var primeraCrida = parseInt(inputNum1.text, 10) || 0;
 var ultimaCrida = parseInt(inputNum2.text, 10) || 0;
-
-primeraCrida = primeraCrida-1;
 
 // primeraCrida = 0; // i-1
 //var ultimaCrida = 4 ; // i
@@ -86,31 +89,6 @@ function extraerNumero(texto) {
 
     // Si encontramos dígitos, los convertimos a un número entero
     return digitosEncontrados !== "" ? parseInt(digitosEncontrados, 10) : null;
-}
-
-function obtenerPiesDesdeWord(fileWord, documentTarget) {
-    if (!fileWord.exists) {
-        alert("El archivo Word no existe");
-        return [];
-    }
-
-    var tempFrame = documentTarget.pages[0].textFrames.add();
-    tempFrame.geometricBounds = [0, 0, 100, 100]; // Tamaño temporal
-
-    tempFrame.place(fileWord);
-
-    var listaPies = [];
-    var parrafos = tempFrame.paragraphs;
-
-    for (var p = 0; p < parrafos.length; p++) {
-        var rawText = parrafos[p].contents; 
-        var txtParrafo = rawText.replace(/[\r\n\t]+$/, "").replace(/^\s+|\s+$/g, "");
-        if (txtParrafo.length > 0) {
-            listaPies.push(txtParrafo);
-        }
-    }
-    tempFrame.remove();
-    return listaPies;
 }
 
 function obtenerImagenesMultiples(myFolder) {
@@ -150,22 +128,24 @@ function myFileFilterMac(myFile) {
     return false;
 }
 
+
 if (carpeta != null) {
     var fotos = obtenerImagenesMultiples(carpeta);
-    var listaPies = obtenerPiesDesdeWord(archivoWord, doc);
+    //var listaPies = obtenerPiesDesdeWord(archivoWord, doc);
 
     if (fotos.length > 0) {
-
+        
+        var tempFrame = doc.pages[0].textFrames.add();
+        tempFrame.geometricBounds = [0, 0, 200, 200];
+        tempFrame.place(archivoWord);
+        
         // i index crida, j index foto
-        for (var i = ultimaCrida - 1; i >= primeraCrida; i--) {
+        for (var numCrida = primeraCrida; numCrida <= ultimaCrida; numCrida++) {
             //var page = doc.pages[0];
-            var nombreEstilo = "Peu";
             var estiloPie = doc.paragraphStyles.itemByName(nombreEstilo);
-            var textBuscar = pre + (i + 1) + post;
+            var textBuscar = pre + numCrida + post;
             var top = 40;
             var left = 40;
-
-            var numCrida = i+1;
 
 
             app.findTextPreferences = NothingEnum.nothing;
@@ -173,7 +153,7 @@ if (carpeta != null) {
             app.findTextPreferences.findWhat = textBuscar;
             var resultados = doc.findText();
             if (resultados.length === 0) {
-                alert("no trobat el text")
+                alert("no s'ha trobat el text de la crida")
                 continue;
             }
 
@@ -182,8 +162,8 @@ if (carpeta != null) {
             var page = puntoDeInsercion.parentTextFrames[0].parentPage;
 
             var flag1 = false;
-            var j = fotos.length -1;
-            while (j >= 0 && !flag1){
+            var j = 0;
+            while (j < fotos.length && !flag1){
 
                 var foto = fotos[j];
                 var nomFoto = String(decodeURIComponent(foto.name));
@@ -192,29 +172,34 @@ if (carpeta != null) {
                 if (numFoto == numCrida){
                     flag1 = true;
                 } else {
-                    j--;
+                    j++;
                 }
             }
             if (!flag1) {
-                alert("foto no trobada")
+                alert("foto no trobada " + numCrida)
                 continue;
             }
 
             var flag2 = false;
-            var j = listaPies.length -1;
-            while (j >= 0 && !flag2){
+            var parrafosTemp = tempFrame.paragraphs;
+            var k = 0;            
+            var varPeuFoto = null;
 
-                var varPeuFoto = listaPies[j];
-                var numPeu = extraerNumero(varPeuFoto)
+            while (k < parrafosTemp.length && !flag2) {
+                var rawText = parrafosTemp[k].contents;
+                var txtParrafo = rawText.replace(/[\r\n\t]+$/, "").replace(/^\s+|\s+$/g, "");
+                var numPeu = extraerNumero(txtParrafo);
 
-                if (numPeu == numCrida){
+                if (numPeu == numCrida) {
                     flag2 = true;
+                    varPeuFoto = txtParrafo;
+                    parrafosTemp[k].remove();
                 } else {
-                    j--;
+                    k++;
                 }
             }
             if (!flag2) {
-                alert("peu no trobat")
+                alert("peu no trobat " + numCrida)
                 continue;
             }
 
@@ -256,9 +241,9 @@ if (carpeta != null) {
             marcoTexto.geometricBounds = [topPie, left, bottomPie, rightPie];
             
 
-            marcoTexto.contents = varPeuFoto + " ";
+            marcoTexto.contents = varPeuFoto;
             if (estiloPie.isValid) {
-                marcoTexto.paragraphs[0].applyParagraphStyle(estiloPie, true);
+                marcoTexto.paragraphs[0].applyParagraphStyle(estiloPie, false);
             }
 
             // Opcional: autoajustar el alto de la caja de texto al contenido escrito
@@ -276,6 +261,7 @@ if (carpeta != null) {
 
         }
 
+        tempFrame.remove();
     } else {
 
         alert("No se han encontrado archivos PNG.");
