@@ -153,7 +153,7 @@ if (carpeta != null) {
             app.findTextPreferences.findWhat = textBuscar;
             var resultados = doc.findText();
             if (resultados.length === 0) {
-                alert("no s'ha trobat el text de la crida " + textBuscar)
+                alert("no s'ha trobat la crida " + textBuscar)
                 continue;
             }
 
@@ -171,8 +171,6 @@ if (carpeta != null) {
 
             var textFramePadre = parentFrames[0];
             var page = textFramePadre.parentPage;
-
-
 
             var flag1 = false;
             var j = 0;
@@ -212,7 +210,6 @@ if (carpeta != null) {
             }
             if (!flag2) {
                 alert("peu no trobat " + numCrida)
-                continue;
             }
 
             var colocados = page.place(foto, [left, top]);
@@ -252,8 +249,12 @@ if (carpeta != null) {
             // Posicionamos el marco de texto [top, left, bottom, right]
             marcoTexto.geometricBounds = [topPie, left, bottomPie, rightPie];
             
-            parrafoEncontrado.duplicate(LocationOptions.AT_BEGINNING, marcoTexto.insertionPoints[0]);
-            parrafoEncontrado.remove();
+            if (flag2 && parrafoEncontrado != null) {
+                parrafoEncontrado.duplicate(LocationOptions.AT_BEGINNING, marcoTexto.insertionPoints[0]);
+                parrafoEncontrado.remove();
+            } else {
+                marcoTexto.contents = "peu no trobat " + numCrida;
+            }
 
             if (estiloPie.isValid) {
                 marcoTexto.paragraphs[0].applyParagraphStyle(estiloPie, false);
@@ -289,7 +290,7 @@ if (carpeta != null) {
             doc.recompose();
         }
 
-        //tempFrame.remove();
+        tempFrame.remove();
     } else {
 
         alert("No se han encontrado archivos PNG.");
