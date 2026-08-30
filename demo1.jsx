@@ -19,10 +19,10 @@ win.spacing = 8;
 
 // Camps de text
 win.add("statictext", undefined, "format");
-var inputStr1 = win.add("edittext", undefined, "(Fig. ");
+var inputStr1 = win.add("edittext", undefined, "Fig ");
 inputStr1.preferredSize.width = 120;
 
-var inputStr2 = win.add("edittext", undefined, ")");
+var inputStr2 = win.add("edittext", undefined, "");
 inputStr2.preferredSize.width = 120;
 
 // Camps numèrics
@@ -147,19 +147,32 @@ if (carpeta != null) {
             var top = 40;
             var left = 40;
 
-
+            doc.recompose();
             app.findTextPreferences = NothingEnum.nothing;
             app.changeTextPreferences = NothingEnum.nothing;
             app.findTextPreferences.findWhat = textBuscar;
             var resultados = doc.findText();
             if (resultados.length === 0) {
-                alert("no s'ha trobat el text de la crida")
+                alert("no s'ha trobat el text de la crida " + textBuscar)
                 continue;
             }
 
             var resultadoEncontrado = resultados[0];
             var puntoDeInsercion = resultadoEncontrado.insertionPoints[-1];
-            var page = puntoDeInsercion.parentTextFrames[0].parentPage;
+            //var page = puntoDeInsercion.parentTextFrames[0].parentPage;
+
+            var parentFrames = puntoDeInsercion.parentTextFrames;
+            
+            // Check if parentTextFrames exists and has at least one frame
+            if (!parentFrames || parentFrames.length === 0) {
+                alert("Atenció: La crida " + textBuscar + " està en text desbordat o no té un marc assignat.");
+                continue; 
+            }
+
+            var textFramePadre = parentFrames[0];
+            var page = textFramePadre.parentPage;
+
+
 
             var flag1 = false;
             var j = 0;
@@ -182,8 +195,8 @@ if (carpeta != null) {
 
             var flag2 = false;
             var parrafosTemp = tempFrame.paragraphs;
-            var k = 0;            
-            var varPeuFoto = null;
+            var k = 0;
+            var parrafoEncontrado = null;
 
             while (k < parrafosTemp.length && !flag2) {
                 var rawText = parrafosTemp[k].contents;
@@ -192,8 +205,7 @@ if (carpeta != null) {
 
                 if (numPeu == numCrida) {
                     flag2 = true;
-                    varPeuFoto = txtParrafo;
-                    parrafosTemp[k].remove();
+                    parrafoEncontrado = parrafosTemp[k]; // Reference to the actual formatted InDesign paragraph
                 } else {
                     k++;
                 }
@@ -240,28 +252,44 @@ if (carpeta != null) {
             // Posicionamos el marco de texto [top, left, bottom, right]
             marcoTexto.geometricBounds = [topPie, left, bottomPie, rightPie];
             
+            parrafoEncontrado.duplicate(LocationOptions.AT_BEGINNING, marcoTexto.insertionPoints[0]);
+            parrafoEncontrado.remove();
 
-            marcoTexto.contents = varPeuFoto;
             if (estiloPie.isValid) {
                 marcoTexto.paragraphs[0].applyParagraphStyle(estiloPie, false);
             }
 
-            // Opcional: autoajustar el alto de la caja de texto al contenido escrito
-            marcoTexto.textFramePreferences.autoSizingReferencePoint = AutoSizingReferenceEnum.TOP_CENTER_POINT;
-            marcoTexto.textFramePreferences.autoSizingType = AutoSizingTypeEnum.HEIGHT_ONLY;
+            // 1. Disable text wrapping on frames before grouping
+            marco.textWrapPreferences.textWrapMode = TextWrapModes.NONE;
+            marcoTexto.textWrapPreferences.textWrapMode = TextWrapModes.NONE;
 
+            // 2. Create the group
             var grupo = page.groups.add([marco, marcoTexto]);
-            //grupo.textWrapPreferences.textWrapMode = TextWrapModes.JUMP_OBJECT_TEXT_WRAP;
-            
+            grupo.textWrapPreferences.textWrapMode = TextWrapModes.NONE;
+
+            // 3. Move group near target location
             var anchorPage = puntoDeInsercion.parentTextFrames[0].parentPage;
             var anchorX = puntoDeInsercion.horizontalOffset;
             var anchorY = puntoDeInsercion.baseline;
-            grupo.move(anchorPage, [anchorX -35, anchorY - 35]);
+            grupo.move(anchorPage, [anchorX - 35, anchorY - 35]);
+
+            // 4. INSERT FIRST (This enables anchored settings mode)
             grupo.anchoredObjectSettings.insertAnchoredObject(puntoDeInsercion, AnchorPosition.ANCHORED);
 
+            // 5. CONFIGURE / ADJUST AFTER (Maintains standard manual release capabilities)
+            var settings = grupo.anchoredObjectSettings;
+            settings.anchoredPosition = AnchorPosition.ANCHORED;
+            settings.anchorPoint = AnchorPoint.TOP_LEFT_ANCHOR;
+            settings.horizontalReferencePoint = AnchoredRelativeTo.ANCHOR_LOCATION;
+            settings.verticalReferencePoint = VerticallyRelativeTo.LINE_BASELINE;
+            settings.anchorXoffset = -35;
+            settings.anchorYoffset = -35;
+
+            // 6. Force recomposition for next iteration
+            doc.recompose();
         }
 
-        tempFrame.remove();
+        //tempFrame.remove();
     } else {
 
         alert("No se han encontrado archivos PNG.");
