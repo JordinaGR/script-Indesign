@@ -246,9 +246,12 @@ if (carpeta != null) {
 
             var margenPie = 2;   
             var topPie = top + altoDeseado + margenPie;
-
             var marcoTexto = page.textFrames.add();
             marcoTexto.geometricBounds = [topPie, left, topPie + 10, left + anchoDeseado];
+
+            marcoTexto.textFramePreferences.autoSizingType = AutoSizingTypeEnum.OFF;
+            marcoTexto.textFramePreferences.verticalJustification = VerticalJustification.TOP_ALIGN;
+            marcoTexto.textFramePreferences.insetSpacing = [0, 0, 0, 0];
 
             if (flag2 && parrafoEncontrado != null) {
                 parrafoEncontrado.duplicate(LocationOptions.AT_BEGINNING, marcoTexto.insertionPoints[0]);
@@ -267,14 +270,15 @@ if (carpeta != null) {
                     p.characters[-1].remove();
                 }
             }
-
             if (marcoTexto.characters.length > 0 && marcoTexto.characters[-1].contents === "\r") {
                 marcoTexto.characters[-1].remove();
             }
 
-            var tfPref = marcoTexto.textFramePreferences;
-            tfPref.autoSizingType = AutoSizingTypeEnum.HEIGHT_ONLY;
-            tfPref.autoSizingReferencePoint = AutoSizingReferenceEnum.TOP_LEFT_POINT;
+            doc.recompose();
+            marcoTexto.fit(FitOptions.FRAME_TO_CONTENT);
+            var boundsActuales = marcoTexto.geometricBounds; // [top, left, bottom, right]
+            var altoCalculado = boundsActuales[2] - boundsActuales[0];
+            marcoTexto.geometricBounds = [topPie, left, topPie + altoCalculado, left + anchoDeseado];
 
             marco.textWrapPreferences.textWrapMode = TextWrapModes.NONE;
             marcoTexto.textWrapPreferences.textWrapMode = TextWrapModes.NONE;
