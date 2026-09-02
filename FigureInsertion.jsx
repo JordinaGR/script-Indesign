@@ -8,7 +8,6 @@ if (!carpeta || !archivoWord) {
     exit();
 }
 
-// gràfics
 var win = new Window("dialog", "Paràmetres d'entrada");
 win.alignChildren = ["fill", "top"];
 win.spacing = 8;
@@ -55,7 +54,7 @@ btnGroup.add("button", undefined, "D'acord", {name: "ok"});
 btnGroup.add("button", undefined, "Cancel·lar", {name: "cancel"});
 
 if (win.show() !== 1) {
-    exit(); // L'usuari ha tancat o premut Cancel·lar
+    exit(); 
 }
 
 var pre = inputStr1.text;
@@ -69,7 +68,7 @@ var anchoDeseado = parseFloat(rawText) || 0;
 var NOusarAmplePredeterminat = chkBoxOption.value; // Returns true or false
 var anchoDeseadoOriginal = anchoDeseado;
 
-var myExtensions = [".png", ".jpg", ".jpeg", ".tif", ".tiff", ".gif", ".pdf", ".psd", ".ai", ".heic"];
+var myExtensions = [".png", ".jpg", ".jpeg", ".tif", ".tiff", ".gif", ".pdf", ".psd", ".ai", ".heic", ".jfif"];
 
 function extraerNumero(texto) {
     if (!texto) return null;
@@ -88,7 +87,6 @@ function extraerNumero(texto) {
             break;
         }
     }
-
     return digitosEncontrados !== "" ? parseInt(digitosEncontrados, 10) : null;
 }
 
@@ -227,7 +225,7 @@ if (carpeta != null) {
                 if (win1.show() !== 1) {
                     anchoDeseado = anchoDeseadoOriginal;
                     tempFrame.remove();
-                    exit(); // L'usuari ha tancat o premut Cancel·lar
+                    exit();
                 }
 
                 var rawText = inputNum3.text.replace(",", ".");
@@ -237,25 +235,21 @@ if (carpeta != null) {
             imagen.absoluteHorizontalScale = 100;
             imagen.absoluteVerticalScale = 100;
 
-
             var boundsOriginales = marco.geometricBounds;
             var anchoOriginal = boundsOriginales[3] - boundsOriginales[1];
             var altoOriginal = boundsOriginales[2] - boundsOriginales[0];
             var proporcion = altoOriginal / anchoOriginal;
             var altoDeseado = anchoDeseado * proporcion;
-
+            
             marco.geometricBounds = [top, left, top + altoDeseado, left + anchoDeseado];
             marco.fit(FitOptions.CONTENT_TO_FRAME);
 
             var margenPie = 2;   
-            var altoPie = 5;
             var topPie = top + altoDeseado + margenPie;
-            var bottomPie = topPie + altoPie;
-            var rightPie = left + anchoDeseado;
 
             var marcoTexto = page.textFrames.add();
-            marcoTexto.geometricBounds = [topPie, left, bottomPie, rightPie];
-            
+            marcoTexto.geometricBounds = [topPie, left, topPie + 10, left + anchoDeseado];
+
             if (flag2 && parrafoEncontrado != null) {
                 parrafoEncontrado.duplicate(LocationOptions.AT_BEGINNING, marcoTexto.insertionPoints[0]);
                 parrafoEncontrado.remove();
@@ -267,6 +261,21 @@ if (carpeta != null) {
                 marcoTexto.paragraphs[0].applyParagraphStyle(estiloPie, false);
             }
 
+            if (marcoTexto.paragraphs.length > 0) {
+                var p = marcoTexto.paragraphs[0];
+                if (p.characters.length > 0 && p.characters[-1].contents === "\r") {
+                    p.characters[-1].remove();
+                }
+            }
+
+            if (marcoTexto.characters.length > 0 && marcoTexto.characters[-1].contents === "\r") {
+                marcoTexto.characters[-1].remove();
+            }
+
+            var tfPref = marcoTexto.textFramePreferences;
+            tfPref.autoSizingType = AutoSizingTypeEnum.HEIGHT_ONLY;
+            tfPref.autoSizingReferencePoint = AutoSizingReferenceEnum.TOP_LEFT_POINT;
+
             marco.textWrapPreferences.textWrapMode = TextWrapModes.NONE;
             marcoTexto.textWrapPreferences.textWrapMode = TextWrapModes.NONE;
 
@@ -277,6 +286,7 @@ if (carpeta != null) {
             var anchorX = puntoDeInsercion.horizontalOffset;
             var anchorY = puntoDeInsercion.baseline;
             grupo.move(anchorPage, [anchorX - 35, anchorY - 35]);
+
             grupo.anchoredObjectSettings.insertAnchoredObject(puntoDeInsercion, AnchorPosition.ANCHORED);
 
             var settings = grupo.anchoredObjectSettings;
